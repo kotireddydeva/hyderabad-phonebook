@@ -9,7 +9,20 @@ function ServiceForm() {
   const [secretKey, setSecretKey] = useState('');
   const [message, setMessage] = useState('');
 
+  const areaOptions = [
+    'kukatpally',
+    'ameerpet',
+    'bachupally',
+    'kushayiguda'
+  ];
+
   const submit = async () => {
+    // Validate required fields
+    if (!name || !service || !area || !phone || !secretKey) {
+      setMessage("❌ All fields are required.");
+      return;
+    }
+
     try {
       const res = await axios.post("https://hyderabad-phonebook.onrender.com/api/services/add", {
         name,
@@ -19,7 +32,6 @@ function ServiceForm() {
         secretKey,
       });
       setMessage("✅ Service added successfully!");
-      // Reset form
       setName('');
       setService('');
       setArea('');
@@ -31,12 +43,16 @@ function ServiceForm() {
   };
 
   const deleteEntry = async () => {
+    if (!phone || !secretKey) {
+      setMessage("❌ Phone and Secret Key are required to delete.");
+      return;
+    }
+
     try {
       const res = await axios.delete("https://hyderabad-phonebook.onrender.com/api/services/delete", {
         data: { phone, secretKey },
       });
       setMessage("🗑️ Service deleted successfully!");
-      // Reset form
       setName('');
       setService('');
       setArea('');
@@ -65,12 +81,12 @@ function ServiceForm() {
         onChange={(e) => setService(e.target.value)}
       />
 
-      <input
-        type="text"
-        placeholder="Enter area (e.g., Ameerpet)"
-        value={area}
-        onChange={(e) => setArea(e.target.value)}
-      />
+      <select value={area} onChange={(e) => setArea(e.target.value)}>
+        <option value="">Select Area</option>
+        {areaOptions.map((a) => (
+          <option key={a} value={a}>{a}</option>
+        ))}
+      </select>
 
       <input
         type="text"
