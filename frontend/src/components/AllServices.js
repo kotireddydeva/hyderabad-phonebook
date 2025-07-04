@@ -5,7 +5,7 @@ function AllServices() {
   const [services, setServices] = useState([]);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/services/search?area=')
+    axios.get('https://hyderabad-phonebook.onrender.com/api/services/search?area=')
       .then((res) => setServices(res.data));
   }, []);
 
