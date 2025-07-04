@@ -32,7 +32,7 @@ function ServiceForm() {
 
   const deleteEntry = async () => {
     try {
-      const res = await axios.delete("http://localhost:5000/api/services/delete", {
+      const res = await axios.delete("https://hyderabad-phonebook.onrender.com/api/services/delete", {
         data: { phone, secretKey },
       });
       setMessage("🗑️ Service deleted successfully!");
