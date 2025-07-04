@@ -2,112 +2,71 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 function ServiceForm() {
-  const [name, setName] = useState('');
-  const [service, setService] = useState('');
-  const [area, setArea] = useState('');
-  const [phone, setPhone] = useState('');
-  const [secretKey, setSecretKey] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    service: '',
+    area: '',
+    phone: '',
+    secretKey: ''
+  });
+
   const [message, setMessage] = useState('');
 
   const areaOptions = ['Kukatpally', 'Ameerpet', 'Bachupally', 'Kushayiguda'];
   const serviceOptions = ['Electrician', 'Plumber', 'Carpenter', 'Painter', 'Mechanic'];
 
-  const submit = async () => {
-    if (!name || !service || !area || !phone || !secretKey) {
-      setMessage("❌ All fields are required.");
-      return;
-    }
-
-    try {
-      await axios.post("https://hyderabad-phonebook.onrender.com/api/services/add", {
-        name,
-        service,
-        area,
-        phone,
-        secretKey,
-      });
-      setMessage("✅ Service added successfully!");
-      setName('');
-      setService('');
-      setArea('');
-      setPhone('');
-      setSecretKey('');
-    } catch (err) {
-      setMessage("❌ " + (err.response?.data || "Error adding service."));
-    }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const deleteEntry = async () => {
-    if (!phone || !secretKey) {
-      setMessage("❌ Phone and Secret Key are required to delete.");
-      return;
+  const handleSubmit = async () => {
+    const { name, service, area, phone, secretKey } = formData;
+    if (!name || !service || !area || !phone || !secretKey) {
+      return setMessage('❗All fields are required.');
     }
 
     try {
-      await axios.delete("https://hyderabad-phonebook.onrender.com/api/services/delete", {
-        data: { phone, secretKey },
-      });
-      setMessage("🗑️ Service deleted successfully!");
-      setName('');
-      setService('');
-      setArea('');
-      setPhone('');
-      setSecretKey('');
+      const res = await axios.post('https://hyderabad-phonebook.onrender.com/api/services/add', formData);
+      if (res.data.success) {
+        setMessage('✅ Service added successfully!');
+        setFormData({ name: '', service: '', area: '', phone: '', secretKey: '' });
+      }
     } catch (err) {
-      setMessage("❌ " + (err.response?.data || "Error deleting service."));
+      if (err.response?.status === 409) {
+        setMessage('⚠️ This phone number already exists.');
+      } else {
+        setMessage('❌ Error adding service.');
+      }
     }
   };
 
   return (
-    <div className="service-form">
-      <h2>📋 Add or Delete Service</h2>
+    <div className="form-box">
+      <h2>➕ Add Service Provider</h2>
 
-      <input
-        type="text"
-        placeholder="Enter your name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
+      <input name="name" value={formData.name} onChange={handleChange} placeholder="Name" />
 
-      <select value={service} onChange={(e) => setService(e.target.value)}>
+      <select name="service" value={formData.service} onChange={handleChange}>
         <option value="">Select Service</option>
-        {serviceOptions.map((s) => (
-          <option key={s} value={s}>{s}</option>
+        {serviceOptions.map(opt => (
+          <option key={opt} value={opt}>{opt}</option>
         ))}
       </select>
 
-      <select value={area} onChange={(e) => setArea(e.target.value)}>
+      <select name="area" value={formData.area} onChange={handleChange}>
         <option value="">Select Area</option>
-        {areaOptions.map((a) => (
-          <option key={a} value={a}>{a}</option>
+        {areaOptions.map(opt => (
+          <option key={opt} value={opt}>{opt}</option>
         ))}
       </select>
 
-      <input
-        type="text"
-        placeholder="Enter phone number"
-        value={phone}
-        onChange={(e) => setPhone(e.target.value)}
-      />
+      <input name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone" />
+      <input name="secretKey" value={formData.secretKey} onChange={handleChange} placeholder="Secret Key (for delete)" />
 
-      <input
-        type="password"
-        placeholder="Enter secret key"
-        value={secretKey}
-        onChange={(e) => setSecretKey(e.target.value)}
-      />
+      <button onClick={handleSubmit}>Submit</button>
 
-      <div style={{ marginTop: '10px' }}>
-        <button onClick={submit}>Add Service</button>
-        <button
-          onClick={deleteEntry}
-          style={{ marginLeft: '10px', backgroundColor: '#e74c3c', color: 'white' }}
-        >
-          Delete My Entry
-        </button>
-      </div>
-
-      {message && <p style={{ marginTop: '15px', color: '#444' }}>{message}</p>}
+      {message && <p className="msg">{message}</p>}
     </div>
   );
 }

@@ -1,21 +1,23 @@
-import React from 'react';
-import './App.css';
+import React, { useState, useEffect } from 'react';
 import ServiceForm from './components/ServiceForm';
 import ServiceList from './components/ServiceList';
+import './App.css';
 
 function App() {
+  const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    document.body.className = darkMode ? 'dark-mode' : '';
+  }, [darkMode]);
+
   return (
     <div>
-    <h1>📞 Hyderabad Services Phonebook</h1>
-    <div className="app-container">
-    
-      <div className="left-side">
-        <ServiceForm />
-      </div>
-      <div className="right-side">
-        <ServiceList />
-      </div>
-    </div>
+      <button className="toggle-btn" onClick={() => setDarkMode(!darkMode)}>
+        {darkMode ? '🌞 Light Mode' : '🌙 Dark Mode'}
+      </button>
+      <h2 style={{ textAlign: 'center', marginTop: 60 }}>📞 Hyderabad Services Phonebook</h2>
+      <ServiceForm />
+      <ServiceList />
     </div>
   );
 }

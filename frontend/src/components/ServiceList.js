@@ -6,6 +6,7 @@ function ServiceList() {
   const [area, setArea] = useState('');
   const [service, setService] = useState('');
   const [results, setResults] = useState([]);
+  const [deleteData, setDeleteData] = useState({ phone: '', secretKey: '' });
   const [message, setMessage] = useState('');
 
   const areaOptions = ['Kukatpally', 'Ameerpet', 'Bachupally', 'Kushayiguda'];
@@ -13,9 +14,7 @@ function ServiceList() {
 
   const search = async () => {
     if (!area && !service) {
-      setMessage("❌ Please select at least area or service to search.");
-      setResults([]);
-      return;
+      return setMessage('❗Enter at least Area or Service to search');
     }
 
     try {
@@ -23,9 +22,23 @@ function ServiceList() {
         params: { area, service }
       });
       setResults(res.data);
-      setMessage(res.data.length ? '' : 'No services found.');
+      setMessage('');
     } catch (err) {
-      setMessage("❌ Error searching services.");
+      setMessage('❌ Failed to fetch results');
+    }
+  };
+
+  const handleDelete = async () => {
+    const { phone, secretKey } = deleteData;
+    if (!phone || !secretKey) return setMessage('❗Both phone and secret key are required');
+
+    try {
+      const res = await axios.post(`https://hyderabad-phonebook.onrender.com/api/services/delete`, deleteData);
+      setMessage('✅ Service deleted successfully');
+      setDeleteData({ phone: '', secretKey: '' });
+      setResults(results.filter(r => r.phone !== phone)); // remove from list
+    } catch (err) {
+      setMessage('❌ Could not delete. Check phone/secret key');
     }
   };
 
@@ -33,29 +46,24 @@ function ServiceList() {
     <div>
       <div className="search-box">
         <h2>🔍 Search Service Providers</h2>
-
         <div className="search-bar">
           <select value={area} onChange={(e) => setArea(e.target.value)}>
             <option value="">Select Area</option>
-            {areaOptions.map((a) => (
-              <option key={a} value={a}>{a}</option>
-            ))}
+            {areaOptions.map((a) => <option key={a} value={a}>{a}</option>)}
           </select>
 
           <select value={service} onChange={(e) => setService(e.target.value)}>
             <option value="">Select Service</option>
-            {serviceOptions.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
+            {serviceOptions.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
 
           <button onClick={search}>Search</button>
         </div>
       </div>
 
-      {message && (
-        <p style={{ textAlign: 'center', color: '#999' }}>{message}</p>
-      )}
+      {message && <p className="msg">{message}</p>}
+
+      {results.length === 0 && <p style={{ textAlign: 'center', color: '#999' }}>No services found.</p>}
 
       {results.map((s) => (
         <div key={s.id} className="service-card">
@@ -66,6 +74,21 @@ function ServiceList() {
           <Rating id={s.id} rating={s.rating} />
         </div>
       ))}
+
+      <div className="delete-box">
+        <h3>🗑 Delete Your Entry</h3>
+        <input
+          placeholder="Phone number"
+          value={deleteData.phone}
+          onChange={(e) => setDeleteData({ ...deleteData, phone: e.target.value })}
+        />
+        <input
+          placeholder="Secret Key"
+          value={deleteData.secretKey}
+          onChange={(e) => setDeleteData({ ...deleteData, secretKey: e.target.value })}
+        />
+        <button onClick={handleDelete}>Delete</button>
+      </div>
     </div>
   );
 }
