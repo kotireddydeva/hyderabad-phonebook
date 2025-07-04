@@ -3,26 +3,29 @@ import axios from 'axios';
 import Rating from './Rating';
 
 function ServiceList() {
-  const [filters, setFilters] = useState({
-    area: '',
-    service: '',
-    name: ''
-  });
-
+  const [area, setArea] = useState('');
+  const [service, setService] = useState('');
   const [results, setResults] = useState([]);
+  const [message, setMessage] = useState('');
 
-  const handleChange = (e) => {
-    setFilters({ ...filters, [e.target.name]: e.target.value });
-  };
+  const areaOptions = ['kukatpally', 'ameerpet', 'bachupally', 'kushayiguda'];
+  const serviceOptions = ['Electrician', 'Plumber', 'Carpenter', 'Painter', 'Mechanic'];
 
   const search = async () => {
+    if (!area && !service) {
+      setMessage("❌ Please select at least area or service to search.");
+      setResults([]);
+      return;
+    }
+
     try {
-      const res = await axios.get('https://hyderabad-phonebook.onrender.com/api/services/search', {
-        params: filters
+      const res = await axios.get(`https://hyderabad-phonebook.onrender.com/api/services/search`, {
+        params: { area, service }
       });
       setResults(res.data);
+      setMessage(res.data.length ? '' : 'No services found.');
     } catch (err) {
-      console.error('Search error:', err);
+      setMessage("❌ Error searching services.");
     }
   };
 
@@ -30,46 +33,39 @@ function ServiceList() {
     <div>
       <div className="search-box">
         <h2>🔍 Search Service Providers</h2>
+
         <div className="search-bar">
-          <input
-            name="area"
-            type="text"
-            placeholder="Search by Area (e.g., Ameerpet)"
-            value={filters.area}
-            onChange={handleChange}
-          />
-          <input
-            name="service"
-            type="text"
-            placeholder="Search by Service (e.g., Plumber)"
-            value={filters.service}
-            onChange={handleChange}
-          />
-          <input
-            name="name"
-            type="text"
-            placeholder="Search by Name"
-            value={filters.name}
-            onChange={handleChange}
-          />
+          <select value={area} onChange={(e) => setArea(e.target.value)}>
+            <option value="">Select Area</option>
+            {areaOptions.map((a) => (
+              <option key={a} value={a}>{a}</option>
+            ))}
+          </select>
+
+          <select value={service} onChange={(e) => setService(e.target.value)}>
+            <option value="">Select Service</option>
+            {serviceOptions.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+
           <button onClick={search}>Search</button>
         </div>
       </div>
 
-      {results.length === 0 && (
-        <p style={{ textAlign: 'center', color: '#999' }}>No services found.</p>
+      {message && (
+        <p style={{ textAlign: 'center', color: '#999' }}>{message}</p>
       )}
 
-      {results.length > 0 &&
-        results.map((s) => (
-          <div key={s.id} className="service-card">
-            <h3>{s.name}</h3>
-            <p><strong>Service:</strong> {s.service}</p>
-            <p><strong>Area:</strong> {s.area}</p>
-            <p><strong>Phone:</strong> {s.phone}</p>
-            <Rating id={s.id} rating={s.rating} />
-          </div>
-        ))}
+      {results.map((s) => (
+        <div key={s.id} className="service-card">
+          <h3>{s.name}</h3>
+          <p><strong>Service:</strong> {s.service}</p>
+          <p><strong>Area:</strong> {s.area}</p>
+          <p><strong>Phone:</strong> {s.phone}</p>
+          <Rating id={s.id} rating={s.rating} />
+        </div>
+      ))}
     </div>
   );
 }
