@@ -11,7 +11,7 @@ function ServiceForm() {
 
   const submit = async () => {
     try {
-      const res = await axios.post("http://localhost:5000/api/services/add", {
+      const res = await axios.post("https://hyderabad-phonebook.onrender.com/api/services/add", {
         name,
         service,
         area,
