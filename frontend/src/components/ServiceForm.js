@@ -9,22 +9,17 @@ function ServiceForm() {
   const [secretKey, setSecretKey] = useState('');
   const [message, setMessage] = useState('');
 
-  const areaOptions = [
-    'kukatpally',
-    'ameerpet',
-    'bachupally',
-    'kushayiguda'
-  ];
+  const areaOptions = ['kukatpally', 'ameerpet', 'bachupally', 'kushayiguda'];
+  const serviceOptions = ['Electrician', 'Plumber', 'Carpenter', 'Painter', 'Mechanic'];
 
   const submit = async () => {
-    // Validate required fields
     if (!name || !service || !area || !phone || !secretKey) {
       setMessage("❌ All fields are required.");
       return;
     }
 
     try {
-      const res = await axios.post("https://hyderabad-phonebook.onrender.com/api/services/add", {
+      await axios.post("https://hyderabad-phonebook.onrender.com/api/services/add", {
         name,
         service,
         area,
@@ -49,7 +44,7 @@ function ServiceForm() {
     }
 
     try {
-      const res = await axios.delete("https://hyderabad-phonebook.onrender.com/api/services/delete", {
+      await axios.delete("https://hyderabad-phonebook.onrender.com/api/services/delete", {
         data: { phone, secretKey },
       });
       setMessage("🗑️ Service deleted successfully!");
@@ -74,12 +69,12 @@ function ServiceForm() {
         onChange={(e) => setName(e.target.value)}
       />
 
-      <input
-        type="text"
-        placeholder="Enter your service (e.g., plumber)"
-        value={service}
-        onChange={(e) => setService(e.target.value)}
-      />
+      <select value={service} onChange={(e) => setService(e.target.value)}>
+        <option value="">Select Service</option>
+        {serviceOptions.map((s) => (
+          <option key={s} value={s}>{s}</option>
+        ))}
+      </select>
 
       <select value={area} onChange={(e) => setArea(e.target.value)}>
         <option value="">Select Area</option>
@@ -104,7 +99,10 @@ function ServiceForm() {
 
       <div style={{ marginTop: '10px' }}>
         <button onClick={submit}>Add Service</button>
-        <button onClick={deleteEntry} style={{ marginLeft: '10px', backgroundColor: '#e74c3c', color: 'white' }}>
+        <button
+          onClick={deleteEntry}
+          style={{ marginLeft: '10px', backgroundColor: '#e74c3c', color: 'white' }}
+        >
           Delete My Entry
         </button>
       </div>
