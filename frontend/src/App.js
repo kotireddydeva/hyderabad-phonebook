@@ -6,8 +6,8 @@ import ServiceList from './components/ServiceList';
 function App() {
   return (
     <div className="app-container">
+    <h1>📞 Hyderabad Services Phonebook</h1>
       <div className="left-side">
-        <h1>📞 Hyderabad Services Phonebook</h1>
         <ServiceForm />
       </div>
       <div className="right-side">
