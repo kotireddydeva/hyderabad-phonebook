@@ -15,7 +15,7 @@ function ServiceForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await axios.post('http://localhost:5000/api/services/add', form);
+    await axios.post('https://hyderabad-phonebook.onrender.com/api/services/add', form);
     alert('Service added!');
     setForm({ name: '', service: '', area: '', phone: '' });
   };
