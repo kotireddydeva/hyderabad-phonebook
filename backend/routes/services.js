@@ -1,82 +1,89 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db');
+const supabase = require('../db');
 
-// 🚫 Prevent duplicate phone + Add secretKey
-router.post('/add', (req, res) => {
+// ➕ Add a new service
+router.post('/add', async (req, res) => {
   const { name, service, area, phone, secretKey } = req.body;
 
-  // Check for existing phone
-  db.get(`SELECT * FROM services WHERE phone = ?`, [phone], (err, row) => {
-    if (err) return res.status(500).send(err.message);
+  if (!name || !service || !area || !phone || !secretKey) {
+    return res.status(400).send('All fields are required.');
+  }
 
-    if (row) {
-      return res.status(400).send("Phone number already exists.");
-    }
+  // Check for duplicate phone
+  const { data: existing, error: findErr } = await supabase
+    .from('services')
+    .select('*')
+    .eq('phone', phone);
 
-    // Insert new service
-    db.run(
-      `INSERT INTO services (name, service, area, phone, secretKey) VALUES (?, ?, ?, ?, ?)`,
-      [name, service, area, phone, secretKey],
-      function (err) {
-        if (err) return res.status(500).send(err.message);
-        res.send({ success: true, id: this.lastID });
-      }
-    );
-  });
+  if (findErr) return res.status(500).send(findErr.message);
+  if (existing.length > 0) return res.status(409).send('Phone number already exists.');
+
+  const { data, error } = await supabase
+    .from('services')
+    .insert([{ name, service, area, phone, secretKey, rating: 0, rating_count: 0 }]);
+
+  if (error) return res.status(500).send(error.message);
+  res.send({ success: true, id: data[0].id });
 });
 
 // 🔍 Search services
-router.get('/search', (req, res) => {
-  const { area = '', service = '', name = '' } = req.query;
+router.get('/search', async (req, res) => {
+  const { area = '', service = '' } = req.query;
 
-  const query = `
-    SELECT id, name, service, area, phone, rating, rating_count FROM services
-    WHERE area LIKE ? AND service LIKE ? AND name LIKE ?
-  `;
+  if (!area && !service) return res.status(400).send('At least one search field is required.');
 
-  db.all(query, [`%${area}%`, `%${service}%`, `%${name}%`], (err, rows) => {
-    if (err) return res.status(500).send(err.message);
-    res.send(rows);
-  });
+  let query = supabase.from('services').select('*');
+
+  if (area) query = query.ilike('area', `%${area}%`);
+  if (service) query = query.ilike('service', `%${service}%`);
+
+  const { data, error } = await query;
+
+  if (error) return res.status(500).send(error.message);
+  res.send(data);
 });
 
-// ⭐ Rate a service
-router.post('/rate/:id', (req, res) => {
+// ⭐ Rate a service provider
+router.post('/rate/:id', async (req, res) => {
   const id = req.params.id;
   const { rating } = req.body;
 
-  db.get(`SELECT rating, rating_count FROM services WHERE id = ?`, [id], (err, row) => {
-    if (err || !row) return res.status(404).send('Not found');
+  const { data: existing, error: findErr } = await supabase
+    .from('services')
+    .select('rating, rating_count')
+    .eq('id', id)
+    .single();
 
-    const newCount = row.rating_count + 1;
-    const newRating = ((row.rating * row.rating_count) + rating) / newCount;
+  if (findErr || !existing) return res.status(404).send('Service not found.');
 
-    db.run(`UPDATE services SET rating = ?, rating_count = ? WHERE id = ?`,
-      [newRating, newCount, id],
-      (err) => {
-        if (err) return res.status(500).send(err.message);
-        res.send({ success: true });
-      });
-  });
+  const newCount = existing.rating_count + 1;
+  const newRating = ((existing.rating * existing.rating_count) + rating) / newCount;
+
+  const { error } = await supabase
+    .from('services')
+    .update({ rating: newRating, rating_count: newCount })
+    .eq('id', id);
+
+  if (error) return res.status(500).send(error.message);
+  res.send({ success: true });
 });
 
-// 🗑️ Delete by phone + secretKey
-router.delete('/delete', (req, res) => {
+// ❌ Delete a service using secret key
+router.post('/delete', async (req, res) => {
   const { phone, secretKey } = req.body;
 
-  db.get(`SELECT * FROM services WHERE phone = ? AND secretKey = ?`, [phone, secretKey], (err, row) => {
-    if (err) return res.status(500).send(err.message);
+  if (!phone || !secretKey) return res.status(400).send('Phone and secret key required.');
 
-    if (!row) {
-      return res.status(404).send("Service not found or wrong secret key.");
-    }
+  const { data, error } = await supabase
+    .from('services')
+    .delete()
+    .eq('phone', phone)
+    .eq('secretKey', secretKey);
 
-    db.run(`DELETE FROM services WHERE phone = ? AND secretKey = ?`, [phone, secretKey], (err) => {
-      if (err) return res.status(500).send(err.message);
-      res.send({ success: true, message: "Service deleted successfully." });
-    });
-  });
+  if (error) return res.status(500).send(error.message);
+  if (data.length === 0) return res.status(404).send('No matching record found.');
+  res.send({ success: true });
 });
 
 module.exports = router;
