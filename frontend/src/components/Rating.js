@@ -26,3 +26,4 @@ function Rating({ id, rating }) {
 }
 
 export default Rating;
+
