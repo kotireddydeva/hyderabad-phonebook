@@ -6,7 +6,7 @@ function Rating({ id, rating }) {
 
   const submitRating = async () => {
     if (stars === 0) return;
-    await axios.post(`http://localhost:5000/api/services/rate/${id}`, { rating: stars });
+    await axios.post(`https://hyderabad-phonebook.onrender.com/api/services/rate/${id}`, { rating: stars });
     alert('Thanks for rating!');
   };
 
