@@ -8,7 +8,7 @@ function ServiceList() {
   const [results, setResults] = useState([]);
   const [message, setMessage] = useState('');
 
-  const areaOptions = ['kukatpally', 'ameerpet', 'bachupally', 'kushayiguda'];
+  const areaOptions = ['Kukatpally', 'Ameerpet', 'Bachupally', 'Kushayiguda'];
   const serviceOptions = ['Electrician', 'Plumber', 'Carpenter', 'Painter', 'Mechanic'];
 
   const search = async () => {
