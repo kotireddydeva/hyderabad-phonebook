@@ -17,7 +17,7 @@ function ServiceList() {
 
   const search = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/services/search', {
+      const res = await axios.get('https://hyderabad-phonebook.onrender.com/api/services/search', {
         params: filters
       });
       setResults(res.data);
