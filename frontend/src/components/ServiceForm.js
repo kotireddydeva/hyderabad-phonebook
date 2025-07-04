@@ -9,7 +9,7 @@ function ServiceForm() {
   const [secretKey, setSecretKey] = useState('');
   const [message, setMessage] = useState('');
 
-  const areaOptions = ['kukatpally', 'ameerpet', 'bachupally', 'kushayiguda'];
+  const areaOptions = ['Kukatpally', 'Ameerpet', 'Bachupally', 'Kushayiguda'];
   const serviceOptions = ['Electrician', 'Plumber', 'Carpenter', 'Painter', 'Mechanic'];
 
   const submit = async () => {
