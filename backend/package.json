@@ -11,10 +11,6 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-<<<<<<< HEAD
-    "@supabase/supabase-js": "^2.50.3",
-=======
->>>>>>> a4134946fd805bbc98e726c2d67d2d745d85a718
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "sqlite3": "^5.1.7"
